@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.TPDAOS2024.dao.PatenteRepository;
 import com.TPDAOS2024.dao.UsuarioRepository;
 import com.TPDAOS2024.domain.Patente;
 import com.TPDAOS2024.domain.Usuario;
@@ -18,6 +19,9 @@ public class UsuarioServiceImp implements UsuarioService{
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private PatenteRepository patenteRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -67,5 +71,15 @@ public class UsuarioServiceImp implements UsuarioService{
     public Usuario obtenerUsuarioPorDni(Long dni) {
         return usuarioRepository.getById(dni);
     }
+
+	@Override
+	public Usuario editarPatenteUsuario(Usuario usuario) {
+		Patente p = patenteRepository.getById(usuario.getPatenteVehiculo().getNumeroPatente());
+		
+	    if (p == null) {
+	        throw new IllegalArgumentException("La patente ya existe: " + usuario.getPatenteVehiculo().getNumeroPatente());
+	    }
+		return usuarioRepository.save(usuario);
+	}
 
 }

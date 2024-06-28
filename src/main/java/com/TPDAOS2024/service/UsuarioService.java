@@ -17,4 +17,6 @@ public interface UsuarioService {
     Usuario obtenerUsuarioPorPatente(String patente);
 
     Usuario obtenerUsuarioPorDni(Long dni);
+    
+    Usuario editarPatenteUsuario(Usuario usuario);
 }

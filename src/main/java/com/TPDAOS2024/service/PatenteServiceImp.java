@@ -17,7 +17,7 @@ public class PatenteServiceImp implements PatenteService {
 	    Patente patenteExistente = patenteRepository.findById(patente.getNumeroPatente()).orElse(null);
 	    if (patenteExistente != null) {
 	        throw new IllegalArgumentException("La patente ya existe: " + patente.getNumeroPatente());
-	    }
+	    } else
 	    return patenteRepository.save(patente);
 	}
 

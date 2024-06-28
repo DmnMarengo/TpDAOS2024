@@ -27,14 +27,13 @@ public class UsuarioController {
 	@PostMapping("/usuarios")
 	public String crearUsuario(@ModelAttribute("usuario") Usuario usuario) {
 		usuarioService.guardarUsuario(usuario);
-
+		
 		Usuario usuarioGuardado = usuarioService.obtenerUsuarioPorDni(usuario.getDNI());
 		
 		Patente nuevaPatente = new Patente(usuario.getPatenteVehiculo().getNumeroPatente(), usuarioGuardado);
-		patenteService.guardarPatente(nuevaPatente);
-
+		
 		usuarioGuardado.setPatenteVehiculo(nuevaPatente);
-		usuarioService.editarUsuario(usuarioGuardado);
+		usuarioService.editarPatenteUsuario(usuarioGuardado);
 
 		return "redirect:/usuarios";
 	}
