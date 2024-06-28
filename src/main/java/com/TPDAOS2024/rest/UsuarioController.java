@@ -9,78 +9,89 @@ import com.TPDAOS2024.domain.Usuario;
 import com.TPDAOS2024.service.PatenteService;
 import com.TPDAOS2024.service.UsuarioService;
 
+import java.util.Collections;
+
 @Controller
 public class UsuarioController {
 
-	@Autowired
-	private UsuarioService usuarioService;
+    @Autowired
+    private UsuarioService usuarioService;
 
-	@Autowired
-	private PatenteService patenteService;
+    @Autowired
+    private PatenteService patenteService;
 
-	@GetMapping("/usuarios")
-	public String listaUsuarios(Model model) {
-		model.addAttribute("usuarios", usuarioService.obtenerUsuarios());
-		return "usuarios";
-	}
+    @GetMapping("/usuarios")
+    public String listaUsuarios(@RequestParam(value = "dni", required = false) Long dni, Model model) {
+        if (dni != null) {
+            Usuario usuario = usuarioService.obtenerUsuarioPorDni(dni);
+            if (usuario != null) {
+                model.addAttribute("usuarios", Collections.singletonList(usuario));
+            } else {
+                model.addAttribute("usuarios", Collections.emptyList());
+            }
+        } else {
+            model.addAttribute("usuarios", usuarioService.obtenerUsuarios());
+        }
+        return "usuarios";
+    }
 
-	@PostMapping("/usuarios")
-	public String crearUsuario(@ModelAttribute("usuario") Usuario usuario) {
-		usuarioService.guardarUsuario(usuario);
-		
-		Usuario usuarioGuardado = usuarioService.obtenerUsuarioPorDni(usuario.getDNI());
-		
-		Patente nuevaPatente = new Patente(usuario.getPatenteVehiculo().getNumeroPatente(), usuarioGuardado);
-		
-		usuarioGuardado.setPatenteVehiculo(nuevaPatente);
-		usuarioService.editarPatenteUsuario(usuarioGuardado);
+    @PostMapping("/usuarios")
+    public String crearUsuario(@ModelAttribute("usuario") Usuario usuario) {
+        usuarioService.guardarUsuario(usuario);
+        
+        Usuario usuarioGuardado = usuarioService.obtenerUsuarioPorDni(usuario.getDNI());
+        
+        Patente nuevaPatente = new Patente(usuario.getPatenteVehiculo().getNumeroPatente(), usuarioGuardado);
+        
+        usuarioGuardado.setPatenteVehiculo(nuevaPatente);
+        usuarioService.editarPatenteUsuario(usuarioGuardado);
 
-		return "redirect:/usuarios";
-	}
+        return "redirect:/usuarios";
+    }
 
-	@GetMapping("/crear_usuario")
-	public String formularioCrearUsuario(Model model) {
-		model.addAttribute("usuario", new Usuario());
-		return "crear_usuario";
-	}
+    @GetMapping("/crear_usuario")
+    public String formularioCrearUsuario(Model model) {
+        model.addAttribute("usuario", new Usuario());
+        return "crear_usuario";
+    }
 
-	@GetMapping("/usuarios/editar/{DNI}")
-	public String editarUsuario(@PathVariable("DNI") Long DNI, Model model) {
-		Usuario usuario = usuarioService.obtenerUsuarioPorDni(DNI);
-		model.addAttribute("usuario", usuario);
-		return "editar_usuario";
-	}
+    @GetMapping("/usuarios/editar/{DNI}")
+    public String editarUsuario(@PathVariable("DNI") Long DNI, Model model) {
+        Usuario usuario = usuarioService.obtenerUsuarioPorDni(DNI);
+        model.addAttribute("usuario", usuario);
+        return "editar_usuario";
+    }
 
-	@PostMapping("/usuarios/{DNI}")
-	public String actualizarUsuario(@PathVariable("DNI") Long DNI, @ModelAttribute("usuario") Usuario usuario) {
-	    Usuario usuarioExistente = usuarioService.obtenerUsuarioPorDni(DNI);
+    @PostMapping("/usuarios/{DNI}")
+    public String actualizarUsuario(@PathVariable("DNI") Long DNI, @ModelAttribute("usuario") Usuario usuario) {
+        Usuario usuarioExistente = usuarioService.obtenerUsuarioPorDni(DNI);
 
-	    Patente patenteActual = usuarioExistente.getPatenteVehiculo();
-	    if (patenteActual != null) {
-	        patenteActual.setUsuario(null);
-	        patenteService.guardarPatente(patenteActual);
-	    }
+        Patente patenteActual = usuarioExistente.getPatenteVehiculo();
+        if (patenteActual != null) {
+            patenteActual.setUsuario(null);
+            patenteService.guardarPatente(patenteActual);
+        }
 
-	    Patente nuevaPatente = new Patente(usuario.getPatenteVehiculo().getNumeroPatente(), usuarioExistente);
-	    patenteService.guardarPatente(nuevaPatente);
+        Patente nuevaPatente = new Patente(usuario.getPatenteVehiculo().getNumeroPatente(), usuarioExistente);
+        patenteService.guardarPatente(nuevaPatente);
 
-	    usuarioExistente.setNombre(usuario.getNombre());
-	    usuarioExistente.setApellido(usuario.getApellido());
-	    usuarioExistente.setDomicilio(usuario.getDomicilio());
-	    usuarioExistente.setMail(usuario.getMail());
-	    usuarioExistente.setFechaNacimiento(usuario.getFechaNacimiento());
-	    usuarioExistente.setPatenteVehiculo(nuevaPatente);
-	    usuarioExistente.setContrasenia(usuario.getContrasenia());
-	    usuarioExistente.setSaldoCuenta(usuario.getSaldoCuenta());
+        usuarioExistente.setNombre(usuario.getNombre());
+        usuarioExistente.setApellido(usuario.getApellido());
+        usuarioExistente.setDomicilio(usuario.getDomicilio());
+        usuarioExistente.setMail(usuario.getMail());
+        usuarioExistente.setFechaNacimiento(usuario.getFechaNacimiento());
+        usuarioExistente.setPatenteVehiculo(nuevaPatente);
+        usuarioExistente.setContrasenia(usuario.getContrasenia());
+        usuarioExistente.setSaldoCuenta(usuario.getSaldoCuenta());
 
-	    usuarioService.editarUsuario(usuarioExistente);
+        usuarioService.editarUsuario(usuarioExistente);
 
-		return "redirect:/usuarios";
-	}
-	
-	@GetMapping("/usuarios/{DNI}")
-	public String borrarUsuario(@PathVariable("DNI") Long DNI) {
-		usuarioService.borrarUsuario(DNI);
-		return "redirect:/usuarios";
-	}
+        return "redirect:/usuarios";
+    }
+    
+    @GetMapping("/usuarios/{DNI}")
+    public String borrarUsuario(@PathVariable("DNI") Long DNI) {
+        usuarioService.borrarUsuario(DNI);
+        return "redirect:/usuarios";
+    }
 }
