@@ -19,6 +19,10 @@ public class Comercio {
     private String direccion;
     private boolean estado;
     
+    public Comercio() {
+    	
+    }
+    
 	public Comercio(Long cuit, String razonSocial, String direccion, boolean estado) {
 		super();
 		cuit = this.cuit;
@@ -52,7 +56,7 @@ public class Comercio {
 		this.direccion = direccion;
 	}
 
-	public boolean isEstado() {
+	public boolean getEstado() {
 		return estado;
 	}
 

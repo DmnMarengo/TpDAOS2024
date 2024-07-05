@@ -2,76 +2,74 @@ package com.TPDAOS2024.rest;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
 import com.TPDAOS2024.domain.Comercio;
 import com.TPDAOS2024.service.ComercioService;
 
 
+
+
 @RestController
-@RequestMapping("/api/comercios")
-@Controller
+@RequestMapping("/comercios")
+@Tag(name = "Comercio", description = "Comercios")
 public class ComercioController {
 
     @Autowired
     private ComercioService comercioService;
 
    
-    @GetMapping("/crear_comercio")
-    public String crearComercio() {
-        return "crear_comercio";
-    }
-
-    @PostMapping("/crear_comercio")
-    public ResponseEntity<Comercio> crearComercio(@RequestBody Comercio comercio) {
-        comercio.setEstado(true); 
-        Comercio nuevoComercio = comercioService.guardarComercio(comercio);
-        return new ResponseEntity<>(nuevoComercio, HttpStatus.CREATED);
-    }
-
-  
-    @PutMapping("/{cuit}")
-    public ResponseEntity<Comercio> actualizarComercio(@PathVariable Long cuit, @RequestBody Comercio comercioActualizado) {
-        Comercio comercio = comercioService.consultarComercio(cuit);
-        if (comercio == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        comercio.setRazonSocial(comercioActualizado.getRazonSocial());
-        comercio.setDireccion(comercioActualizado.getDireccion());
-        comercioService.editarComercio(cuit, comercio);
-        return new ResponseEntity<>(comercio, HttpStatus.OK);
-    }
-
-
-    @GetMapping("/{cuit}")
-    public ResponseEntity<Comercio> consultarComercio(@PathVariable Long cuit) {
-        Comercio comercio = comercioService.consultarComercio(cuit);
-        if (comercio == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(comercio, HttpStatus.OK);
-    }
-
     
-    @GetMapping
-    public ResponseEntity<List<Comercio>> listarComercios() {
-        List<Comercio> comercios = comercioService.listarComercios();
-        return new ResponseEntity<>(comercios, HttpStatus.OK);
-    }
-
- 
-    @DeleteMapping("/{cuit}")
-    public ResponseEntity<Void> eliminarComercio(@PathVariable Long cuit) {
-        Comercio comercio = comercioService.consultarComercio(cuit);
-        if (comercio == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    /**
+	 * Inserta un nuevo comercio en la base de datos
+	 * 			curl --location --request POST 'http://localhost:8080/comercios'
+	 *			--header 'Accept: application/json' 
+	 * 			--header 'Content-Type: application/json' 
+	 *			--data-raw '{
+	 *			    "cuit": 28278371712,
+	 *			    "razonSocial": "Kiosko ElEjemplo",
+	 *			    "direccion": "San Juan 2002",
+	 *			    "estado": true
+	 *			}'
+	 * @param c Comercio  a guardarComercio
+	 * @return Comercio insertado o error en otro caso
+	 * @throws Exception 
+	 */
+    @PostMapping
+    public ResponseEntity<Object> guardar(@Valid @RequestBody ComercioForm form, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getAllErrors());
         }
-        comercioService.borrarComercio(cuit);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+        Comercio c = form.toPojo();
+        comercioService.guardarComercio(c);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{cuit}")
+                            .buildAndExpand(c.getCuit()).toUri();
+
+        return ResponseEntity.created(location).body(c);
     }
+	
+
 }
