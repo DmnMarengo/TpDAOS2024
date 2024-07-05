@@ -1,33 +1,27 @@
-package com.TPDAOS2024.domain;
-import jakarta.persistence.Entity;
+package TPDAOS2024.dto;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.hateoas.RepresentationModel;
 
-@Entity
-@Table(name = "comercio")
-public class Comercio {
+import com.TPDAOS2024.domain.Comercio;
 
-    @Id
+
+
+public class ComercioResponseDTO extends RepresentationModel<ComercioResponseDTO> {
+
     private Long cuit;
-
     private String razonSocial;
     private String direccion;
     private boolean estado;
 
-   
-    public Comercio() {
+    public ComercioResponseDTO(Comercio comercio) {
+        this.cuit = comercio.getCuit();
+        this.razonSocial = comercio.getRazonSocial();
+        this.direccion = comercio.getDireccion();
+        this.estado = comercio.isEstado();
+
     }
 
-   
-    public Comercio(Long cuit, String razonSocial, String direccion, boolean estado) {
-        this.cuit = cuit;
-        this.razonSocial = razonSocial;
-        this.direccion = direccion;
-        this.estado = estado;
-    }
-
-    
+    // Getters y setters
     public Long getCuit() {
         return cuit;
     }

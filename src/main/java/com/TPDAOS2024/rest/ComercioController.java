@@ -3,6 +3,7 @@ package com.TPDAOS2024.rest;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
@@ -28,6 +29,8 @@ import jakarta.validation.Valid;
 import com.TPDAOS2024.domain.Comercio;
 import com.TPDAOS2024.service.ComercioService;
 
+import TPDAOS2024.dto.ComercioResponseDTO;
+
 
 
 
@@ -39,24 +42,10 @@ public class ComercioController {
     @Autowired
     private ComercioService comercioService;
 
-   
-    
-    /**
-	 * Inserta un nuevo comercio en la base de datos
-	 * 			curl --location --request POST 'http://localhost:8080/comercios'
-	 *			--header 'Accept: application/json' 
-	 * 			--header 'Content-Type: application/json' 
-	 *			--data-raw '{
-	 *			    "cuit": 28278371712,
-	 *			    "razonSocial": "Kiosko ElEjemplo",
-	 *			    "direccion": "San Juan 2002",
-	 *			    "estado": true
-	 *			}'
-	 * @param c Comercio  a guardarComercio
-	 * @return Comercio insertado o error en otro caso
-	 * @throws Exception 
-	 */
-    @PostMapping
+    //ingresar en la terminal el curl de la siguiente forma, de lo contrario genera error y no pude encontrar otra solucion
+    //curl --location --request POST "http://localhost:8080/comercios" --header "Accept: application/json" --header "Content-Type: application/json" --data-raw "{\"cuit\":\"20286043212\", \"razonSocial\":\"Impresiones SunCop\", \"direccion\":\"Av. Colon 205\", \"estado\":true}"
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Inserta un nuevo comercio en la base de datos")
     public ResponseEntity<Object> guardar(@Valid @RequestBody ComercioForm form, BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getAllErrors());
@@ -66,10 +55,46 @@ public class ComercioController {
         comercioService.guardarComercio(c);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{cuit}")
-                            .buildAndExpand(c.getCuit()).toUri();
+                .buildAndExpand(c.getCuit()).toUri();
 
-        return ResponseEntity.created(location).body(c);
+        return ResponseEntity.created(location).body(new ComercioResponseDTO(c));
     }
-	
 
+    @PutMapping(value = "/{cuit}"
+    		+ "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Actualiza un comercio existente")
+    public ResponseEntity<Object> editar(@PathVariable Long cuit, @Valid @RequestBody ComercioForm form,
+            BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getAllErrors());
+        }
+
+        Comercio comercioActualizado = form.toPojo();
+        Comercio comercio = comercioService.editarComercio(cuit, comercioActualizado);
+
+        return ResponseEntity.ok(new ComercioResponseDTO(comercio));
+    }
+
+    @DeleteMapping("/{cuit}")
+    @Operation(summary = "Marca como suspendido un comercio existente")
+    public ResponseEntity<Void> borrar(@PathVariable Long cuit) {
+        comercioService.borrarComercio(cuit);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{cuit}")
+    @Operation(summary = "Consulta un comercio por CUIT")
+    public ResponseEntity<Object> consultar(@PathVariable Long cuit) {
+        Comercio comercio = comercioService.consultarComercio(cuit);
+        return ResponseEntity.ok(new ComercioResponseDTO(comercio));
+    }
+
+    @GetMapping
+    @Operation(summary = "Lista todos los comercios")
+    public ResponseEntity<List<ComercioResponseDTO>> listar() {
+        List<Comercio> comercios = comercioService.listarComercios();
+        List<ComercioResponseDTO> responseDTOs = comercios.stream().map(ComercioResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responseDTOs);
+    }
 }
