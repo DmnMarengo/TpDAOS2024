@@ -5,7 +5,7 @@ import org.springframework.hateoas.RepresentationModel;
 import com.TPDAOS2024.domain.Comercio;
 
 
-
+//@AUTHOR Damian Mateo Marengo
 public class ComercioResponseDTO extends RepresentationModel<ComercioResponseDTO> {
 
     private Long cuit;

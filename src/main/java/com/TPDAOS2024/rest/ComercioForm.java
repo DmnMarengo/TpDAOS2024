@@ -5,7 +5,7 @@ import com.TPDAOS2024.domain.Comercio;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-
+//@AUTHOR Damian Mateo Marengo
 public class ComercioForm {
 	
 

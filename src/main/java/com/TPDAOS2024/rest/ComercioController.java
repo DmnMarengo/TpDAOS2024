@@ -32,7 +32,7 @@ import com.TPDAOS2024.service.ComercioService;
 import TPDAOS2024.dto.ComercioResponseDTO;
 
 
-
+//@AUTHOR Damian Mateo Marengo
 
 @RestController
 @RequestMapping("/comercios")
@@ -60,6 +60,9 @@ public class ComercioController {
         return ResponseEntity.created(location).body(new ComercioResponseDTO(c));
     }
 
+    //para actualizar un comercio me encontre con el mismo error que tenia con el push para cargar uno asique utilice la misma solucion
+    //curl --location --request PUT "http://localhost:8080/comercios/20286043212" --header "Accept: application/json" --header "Content-Type: application/json" --data-raw "{\"cuit\":\"20286043212\", \"razonSocial\":\"Nueva Razón Social\", \"direccion\":\"Nueva Dirección\", \"estado\":true}"
+    //al ingresar un comando de esta manera si funciona.
     @PutMapping(value = "/{cuit}"
     		+ "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Actualiza un comercio existente")
@@ -74,14 +77,19 @@ public class ComercioController {
 
         return ResponseEntity.ok(new ComercioResponseDTO(comercio));
     }
-
+    
+    
+//Para Eliminar un comercio (cambiar su estado a false) realizar el siguiente curl
+//curl --location --request DELETE "http://localhost:8080/comercios/{29354125321052}" --header "Accept: application/json"
+    
     @DeleteMapping("/{cuit}")
     @Operation(summary = "Marca como suspendido un comercio existente")
     public ResponseEntity<Void> borrar(@PathVariable Long cuit) {
         comercioService.borrarComercio(cuit);
         return ResponseEntity.noContent().build();
     }
-
+//Buscar comercio funciona de la siguiente forma
+//curl --location --request GET http://localhost:8080/comercios/28278371712 
     @GetMapping("/{cuit}")
     @Operation(summary = "Consulta un comercio por CUIT")
     public ResponseEntity<Object> consultar(@PathVariable Long cuit) {
@@ -89,6 +97,8 @@ public class ComercioController {
         return ResponseEntity.ok(new ComercioResponseDTO(comercio));
     }
 
+    //Para traer todos los comercios utilizar el siguiente curl
+    //curl --location --request GET "http://localhost:8080/comercios" --header "Accept: application/json"
     @GetMapping
     @Operation(summary = "Lista todos los comercios")
     public ResponseEntity<List<ComercioResponseDTO>> listar() {

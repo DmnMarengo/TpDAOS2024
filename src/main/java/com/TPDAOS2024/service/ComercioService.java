@@ -3,7 +3,7 @@ import java.util.List;
 
 import com.TPDAOS2024.domain.Comercio;
 
-
+//@AUTHOR Damian Mateo Marengo
 public interface ComercioService {
 
     Comercio guardarComercio(Comercio comercio);

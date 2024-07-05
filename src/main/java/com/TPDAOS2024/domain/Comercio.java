@@ -3,7 +3,7 @@ import jakarta.persistence.Entity;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
+//@AUTHOR Damian Mateo Marengo
 @Entity
 @Table(name = "comercio")
 public class Comercio {

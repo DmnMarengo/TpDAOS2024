@@ -11,7 +11,7 @@ import com.TPDAOS2024.domain.Comercio;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-
+//@AUTHOR Damian Mateo Marengo
 @Service
 public class ComercioServiceImp implements ComercioService {
 
