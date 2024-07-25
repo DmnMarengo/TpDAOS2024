@@ -1,8 +1,9 @@
 package com.TPDAOS2024.rest;
 
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.TPDAOS2024.domain.Patente;
 import com.TPDAOS2024.domain.Usuario;
@@ -10,8 +11,10 @@ import com.TPDAOS2024.service.PatenteService;
 import com.TPDAOS2024.service.UsuarioService;
 
 import java.util.Collections;
+import java.util.List;
 
-@Controller
+@RestController
+@RequestMapping("/usuarios")
 public class UsuarioController {
 
     @Autowired
@@ -20,78 +23,98 @@ public class UsuarioController {
     @Autowired
     private PatenteService patenteService;
 
-    @GetMapping("/usuarios")
-    public String listaUsuarios(@RequestParam(value = "dni", required = false) Long dni, Model model) {
+    @GetMapping
+    public List<Usuario> listaUsuarios(@RequestParam(value = "dni", required = false) Long dni) {
         if (dni != null) {
             Usuario usuario = usuarioService.obtenerUsuarioPorDni(dni);
             if (usuario != null) {
-                model.addAttribute("usuarios", Collections.singletonList(usuario));
+                return Collections.singletonList(usuario);
             } else {
-                model.addAttribute("usuarios", Collections.emptyList());
+                return Collections.emptyList();
             }
         } else {
-            model.addAttribute("usuarios", usuarioService.obtenerUsuarios());
+            return usuarioService.obtenerUsuarios();
         }
-        return "usuarios";
     }
 
-    @PostMapping("/usuarios")
-    public String crearUsuario(@ModelAttribute("usuario") Usuario usuario) {
+    @GetMapping("/{DNI}")
+    public ResponseEntity<Usuario> obtenerUsuarioPorDni(@PathVariable Long DNI) {
+        Usuario usuario = usuarioService.obtenerUsuarioPorDni(DNI);
+        if (usuario != null) {
+            return new ResponseEntity<>(usuario, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+
+    @PostMapping
+    public Usuario crearUsuario(@RequestBody Usuario usuario) {
         usuarioService.guardarUsuario(usuario);
-        
+
         Usuario usuarioGuardado = usuarioService.obtenerUsuarioPorDni(usuario.getDNI());
-        
+
         Patente nuevaPatente = new Patente(usuario.getPatenteVehiculo().getNumeroPatente(), usuarioGuardado);
-        
+
         usuarioGuardado.setPatenteVehiculo(nuevaPatente);
         usuarioService.editarPatenteUsuario(usuarioGuardado);
 
-        return "redirect:/usuarios";
+        return usuarioGuardado;
     }
 
-    @GetMapping("/crear_usuario")
-    public String formularioCrearUsuario(Model model) {
-        model.addAttribute("usuario", new Usuario());
-        return "crear_usuario";
+    @GetMapping("/nuevo")
+    public Usuario formularioCrearUsuario() {
+        return new Usuario();
     }
 
-    @GetMapping("/usuarios/editar/{DNI}")
-    public String editarUsuario(@PathVariable("DNI") Long DNI, Model model) {
-        Usuario usuario = usuarioService.obtenerUsuarioPorDni(DNI);
-        model.addAttribute("usuario", usuario);
-        return "editar_usuario";
+    @GetMapping("/editar/{DNI}")
+    public Usuario editarUsuario(@PathVariable("DNI") Long DNI) {
+        return usuarioService.obtenerUsuarioPorDni(DNI);
     }
 
-    @PostMapping("/usuarios/{DNI}")
-    public String actualizarUsuario(@PathVariable("DNI") Long DNI, @ModelAttribute("usuario") Usuario usuario) {
-        Usuario usuarioExistente = usuarioService.obtenerUsuarioPorDni(DNI);
+    @PutMapping("/{DNI}")
+    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable("DNI") Long DNI, @RequestBody Usuario usuario) {
+        try {
+            Usuario usuarioExistente = usuarioService.obtenerUsuarioPorDni(DNI);
 
-        Patente patenteActual = usuarioExistente.getPatenteVehiculo();
-        if (patenteActual != null) {
-            patenteActual.setUsuario(null);
-            patenteService.guardarPatente(patenteActual);
+            if (usuarioExistente == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Patente patenteActual = usuarioExistente.getPatenteVehiculo();
+
+                if (!patenteActual.getNumeroPatente().equalsIgnoreCase(usuario.getPatenteVehiculo().getNumeroPatente())) {
+                    Patente p = new Patente();
+                    p.setNumeroPatente(usuario.getPatenteVehiculo().getNumeroPatente());
+                    p.setUsuario(usuario);
+
+                    patenteService.borrarPatente(patenteActual.getNumeroPatente());
+                    patenteService.guardarPatente(p);
+
+                    /*Patente p = patenteService.obtenerPorId(usuarioExistente.getPatenteVehiculo().getNumeroPatente());
+                    p.setNumeroPatente(usuario.getPatenteVehiculo().getNumeroPatente());
+                    usuarioExistente.setPatenteVehiculo(p);
+                    patenteService.borrarPatente(usuarioExistente.getPatenteVehiculo().getNumeroPatente());
+                    patenteService.guardarPatente(p);*/
+                }
+
+            usuarioExistente.setNombre(usuario.getNombre());
+            usuarioExistente.setApellido(usuario.getApellido());
+            usuarioExistente.setDomicilio(usuario.getDomicilio());
+            usuarioExistente.setMail(usuario.getMail());
+            usuarioExistente.setFechaNacimiento(usuario.getFechaNacimiento());
+            usuarioExistente.setContrasenia(usuario.getContrasenia());
+            usuarioExistente.setSaldoCuenta(usuario.getSaldoCuenta());
+
+            usuarioService.editarUsuario(usuarioExistente);
+
+            return ResponseEntity.ok(usuarioExistente);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        Patente nuevaPatente = new Patente(usuario.getPatenteVehiculo().getNumeroPatente(), usuarioExistente);
-        patenteService.guardarPatente(nuevaPatente);
-
-        usuarioExistente.setNombre(usuario.getNombre());
-        usuarioExistente.setApellido(usuario.getApellido());
-        usuarioExistente.setDomicilio(usuario.getDomicilio());
-        usuarioExistente.setMail(usuario.getMail());
-        usuarioExistente.setFechaNacimiento(usuario.getFechaNacimiento());
-        usuarioExistente.setPatenteVehiculo(nuevaPatente);
-        usuarioExistente.setContrasenia(usuario.getContrasenia());
-        usuarioExistente.setSaldoCuenta(usuario.getSaldoCuenta());
-
-        usuarioService.editarUsuario(usuarioExistente);
-
-        return "redirect:/usuarios";
     }
-    
-    @GetMapping("/usuarios/{DNI}")
-    public String borrarUsuario(@PathVariable("DNI") Long DNI) {
+
+    @DeleteMapping("/{DNI}")
+    public void borrarUsuario(@PathVariable("DNI") Long DNI) {
         usuarioService.borrarUsuario(DNI);
-        return "redirect:/usuarios";
     }
 }

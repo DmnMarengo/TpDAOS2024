@@ -1,5 +1,6 @@
 package com.TPDAOS2024.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
@@ -16,6 +17,7 @@ public class Patente {
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "usuario_dni")
+	@JsonBackReference
 	private Usuario usuario;
 
 	public Patente() {

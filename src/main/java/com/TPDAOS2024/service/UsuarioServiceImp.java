@@ -42,10 +42,6 @@ public class UsuarioServiceImp implements UsuarioService {
 
 	@Override
 	public Usuario editarUsuario(Usuario usuario) {
-		Usuario usuarioExistente = usuarioRepository.findById(usuario.getDNI()).orElse(null);
-		if (usuarioExistente != null) {
-			throw new IllegalArgumentException("El usuario ya existe: " + usuario.getDNI());
-		}
 		return usuarioRepository.save(usuario);
 	}
 

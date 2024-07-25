@@ -2,6 +2,7 @@ package com.TPDAOS2024.domain;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.CascadeType;
@@ -26,6 +27,7 @@ public class Usuario {
 	private Date fechaNacimiento;
 
 	@OneToOne(mappedBy = "usuario", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private Patente patenteVehiculo;
 
 	private String contrasenia;

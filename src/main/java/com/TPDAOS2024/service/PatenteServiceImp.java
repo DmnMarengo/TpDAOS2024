@@ -23,11 +23,11 @@ public class PatenteServiceImp implements PatenteService {
 
 	@Override
 	public Patente editarPatente(Patente patente) {
-	    Patente patenteExistente = patenteRepository.findById(patente.getNumeroPatente()).orElse(null);
-	    if (patenteExistente != null) {
-	        throw new IllegalArgumentException("La patente ya existe: " + patente.getNumeroPatente());
-	    }
-	    return patenteRepository.save(patente);
+		Patente patenteExistente = patenteRepository.findById(patente.getNumeroPatente()).orElse(null);
+		if (patenteExistente != null) {
+			throw new IllegalArgumentException("La patente ya existe: " + patente.getNumeroPatente());
+		} else
+			return patenteRepository.save(patente);
 	}
 
 	@Override
