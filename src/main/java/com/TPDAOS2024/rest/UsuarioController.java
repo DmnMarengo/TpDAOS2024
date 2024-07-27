@@ -13,6 +13,45 @@ import com.TPDAOS2024.service.UsuarioService;
 import java.util.Collections;
 import java.util.List;
 
+/*Para utilizar el CRUD de Usuario se necesita POSTMAN.
+GET http://localhost:8080/usuarios para obtener todos los usuarios
+GET http://localhost:8080/usuarios/{DNI} para obtener usuario por DNI
+POST http://localhost:8080/usuarios
+        {
+        "nombre": "Ejemplo",
+        "apellido": "Ejemplo",
+        "domicilio": "Ejemplo",
+        "mail": "Ejemplo@gmail.com",
+        "fechaNacimiento": "2024-06-02T03:00:00.000+00:00",
+        "patenteVehiculo": {
+        "numeroPatente": "999"
+        },
+        "contrasenia": "Ejemplo",
+        "saldoCuenta": null,
+        "dni": 999
+        }
+
+ejemplo para poder cargar un usuario por el post.
+
+DELETE http://localhost:8080/usuarios/{DNI} en el parámetro dni se debe poner el dni del usuario cargado para poder borrarlo.
+
+PUT http://localhost:8080/usuarios/{DNI} en el par[ametro dni se debe poner un DNI ya registrado para editar, podemos utilizar el ejemplo de antes
+http://localhost:8080/usuarios/999
+        {
+        "nombre": "Alfredo",
+        "apellido": "Pérez",
+        "domicilio": "Av. Corrientes 1559",
+        "mail": "Alfredoperez@gmail.com",
+        "fechaNacimiento": "2024-06-02T03:00:00.000+00:00",
+        "patenteVehiculo": {
+        "numeroPatente": "999"
+        },
+        "contrasenia": "alfreditoperez81528",
+        "saldoCuenta": null,
+        "dni": 999
+        }
+
+        (el único error que hasta ahora no encontré solución es que al editar cualquier dato menos dni se edita correctamente, pero al editar la patente no me deja y me tira error)*/
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
